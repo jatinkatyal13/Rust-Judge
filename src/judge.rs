@@ -51,7 +51,7 @@ pub fn run(payload: &str) -> JudgeResult {
   let content = decode(&judging.stdin).unwrap();
   input_file.write_all(&content);
 
-  let compile_and_run = 
+  let _compile_and_run = 
     Command::new("runguard")
       .arg("sh")
       .arg(format!("languages/{}-run.sh", judging.lang))

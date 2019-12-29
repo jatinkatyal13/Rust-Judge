@@ -1,12 +1,7 @@
-extern crate config;
-
 mod listeners;
 mod judge;
 
-use std::{
-  str,
-  collections::HashMap
-};
+use std::str;
 use listeners::queue::QueueService;
 use log::info;
 use lapin::message::Delivery;
@@ -14,19 +9,26 @@ use judge::{
   run,
   JudgeResult
 };
+use serde::{
+  Serialize,
+  Deserialize
+};
+
+#[derive(Serialize, Deserialize)]
+struct Config {
+  AMQP_URL: String
+}
+impl ::std::default::Default for Config {
+  fn default() -> Self { Self { AMQP_URL: "amqp://guest:guest@127.0.0.1:5672/%2f".to_string() } }
+}
 
 fn main() {
-  let mut settings = config::Config::default();
-  settings
-    .merge(config::File::with_name("config")).unwrap();
-  let settings = settings.try_into::<HashMap<String, String>>()
-    .unwrap();
-
+  let cfg: Config = confy::load("worker").unwrap();
 
   let mut queue = QueueService{
     conn: None
   };
-  queue.connect(settings.get("AMQP_URL").unwrap());
+  queue.connect(&cfg.AMQP_URL);
 
   info!("Connected to the queue");
 
