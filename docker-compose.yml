@@ -2,3 +2,5 @@ version: '3'
 services:
   judge:
     build: .
+    env_file: 
+      .env

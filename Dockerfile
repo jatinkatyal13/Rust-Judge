@@ -20,6 +20,5 @@ RUN cargo build --release
 RUN cp target/release/worker /bin/worker
 
 COPY ./languages ./languages
-COPY ./config.json ./config.json
 
 ENTRYPOINT ["/bin/worker"]
