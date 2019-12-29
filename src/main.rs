@@ -3,8 +3,9 @@ extern crate config;
 mod listeners;
 
 use std::collections::HashMap;
-use listeners::queue::Queue;
+use listeners::queue::QueueService;
 use log::info;
+use lapin::message::Delivery;
 
 fn main() {
   let mut settings = config::Config::default();
@@ -14,11 +15,15 @@ fn main() {
     .unwrap();
 
 
-  let mut queue = Queue{
-    conn: None
+  let mut queue = QueueService{
+    conn: None,
+    channel: None
   };
   queue.connect(settings.get("AMQP_URL").unwrap());
 
-  info!("Connected to the queue")
+  info!("Connected to the queue");
 
+  let consumer = queue.subscribeToQueue("test", &|delivery: &Delivery| {
+    println!("received message: {:?}", delivery);
+  });
 }
