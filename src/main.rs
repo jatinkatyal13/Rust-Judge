@@ -1,11 +1,19 @@
 extern crate config;
 
 mod listeners;
+mod judge;
 
-use std::collections::HashMap;
+use std::{
+  str,
+  collections::HashMap
+};
 use listeners::queue::QueueService;
 use log::info;
 use lapin::message::Delivery;
+use judge::{
+  run,
+  JudgeResult
+};
 
 fn main() {
   let mut settings = config::Config::default();
@@ -23,6 +31,8 @@ fn main() {
   info!("Connected to the queue");
 
   queue.subscribe_to_queue("test", &|delivery: &Delivery| {
-    println!("received message: {:?}", delivery);
+    let result: JudgeResult = run(str::from_utf8(&delivery.data).unwrap());
+    println!("{}", result.stdout);
+    println!("{}", result.stderr);
   });
 }
