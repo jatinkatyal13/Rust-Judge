@@ -16,14 +16,13 @@ fn main() {
 
 
   let mut queue = QueueService{
-    conn: None,
-    channel: None
+    conn: None
   };
   queue.connect(settings.get("AMQP_URL").unwrap());
 
   info!("Connected to the queue");
 
-  let consumer = queue.subscribeToQueue("test", &|delivery: &Delivery| {
+  queue.subscribe_to_queue("test", &|delivery: &Delivery| {
     println!("received message: {:?}", delivery);
   });
 }

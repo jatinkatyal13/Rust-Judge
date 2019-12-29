@@ -1,17 +1,13 @@
 use lapin::{
   options::*, 
   types::FieldTable,
-  BasicProperties, 
   message::Delivery,
-  Channel,
-  Queue,
   Connection,
   ConnectionProperties,
 };
 
 pub struct QueueService {
-  pub conn: Option<Connection>,
-  pub channel: Option<Channel>
+  pub conn: Option<Connection>
 }
 
 impl QueueService {
@@ -19,15 +15,17 @@ impl QueueService {
     self.conn = Some(Connection::connect(&addr, ConnectionProperties::default())
       .wait()
       .expect("connection error"));
-    self.channel = Some(self.conn.as_ref().unwrap().create_channel()
-      .wait()
-      .expect("create_channel"));
   }
 
-  pub fn subscribeToQueue(&self, name: &str, cb: &dyn Fn(&Delivery)) {
-    let queue = self.channel
-      .as_ref()
-      .unwrap()
+  pub fn subscribe_to_queue(
+    &self, 
+    name: &str, 
+    cb: &dyn Fn(&Delivery)
+  ) {
+    let channel = self.conn.as_ref().unwrap().create_channel()
+      .wait()
+      .expect("create_channel");
+    let queue = channel
       .queue_declare(
         &name,
         QueueDeclareOptions::default(),
@@ -36,9 +34,7 @@ impl QueueService {
       .wait()
       .expect("queue_declare");
 
-    let consumer = self.channel
-      .as_ref()
-      .unwrap()
+    let consumer = channel
       .basic_consume(
           &queue,
           "my_consumer",
@@ -51,9 +47,7 @@ impl QueueService {
     for delivery in consumer {
       cb(&delivery.as_ref().unwrap());
       if let Ok(delivery) = delivery {
-        self.channel
-          .as_ref()
-          .unwrap()
+        channel
           .basic_ack(delivery.delivery_tag, BasicAckOptions::default())
           .wait()
           .expect("basic_ack");
