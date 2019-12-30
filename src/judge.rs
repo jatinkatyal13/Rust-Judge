@@ -51,24 +51,56 @@ pub fn run(payload: &str) -> JudgeResult {
   let content = decode(&judging.stdin).unwrap();
   input_file.write_all(&content);
 
+  // let domjudge user be the owner of running directory
+  let _chown = 
+    Command::new("chown")
+      .arg("-R")
+      .arg("domjudge:domjudge")
+      .arg(&running_directory)
+      .output();
   let _compile_and_run = 
     Command::new("runguard")
+      .arg("-u")
+      .arg("domjudge")
       .arg("sh")
       .arg(format!("languages/{}-run.sh", judging.lang))
       .arg(&running_directory)
       .output()
       .expect("failed to execute process");
+  // ownership back to root
+  let _chown = 
+    Command::new("chown")
+      .arg("-R")
+      .arg("$USER:$USER")
+      .arg(&running_directory)
+      .output();
 
   let mut result = JudgeResult {
     stdout: String::new(),
     stderr: String::new()
   };
-  let mut output_file = File::open(&output).unwrap();
+
   let mut stdout = String::new();
-  output_file.read_to_string(&mut stdout).unwrap();
-  let mut error_file = File::open(&error).unwrap();
   let mut stderr = String::new();
-  error_file.read_to_string(&mut stderr).unwrap();
+
+  if let Ok(mut output_file) = File::open(&output) {
+    output_file.read_to_string(&mut stdout).unwrap();
+  } else {
+    println!("cannot open output file");
+  }
+
+  if let Ok(mut error_file) = File::open(&error) {
+    error_file.read_to_string(&mut stderr).unwrap();
+  } else {
+    println!("cannot open error file");
+  }
+
+  // delete run directory
+  let _chown = 
+    Command::new("rm")
+      .arg("-rf")
+      .arg(&running_directory)
+      .output();
 
   result.stdout = encode(&stdout);
   result.stderr = encode(&stderr);

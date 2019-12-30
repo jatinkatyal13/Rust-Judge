@@ -1,9 +1,9 @@
-mod listeners;
+mod queue;
 mod judge;
 mod constants;
 
 use std::str;
-use listeners::queue::QueueService;
+use queue::QueueService;
 use log::info;
 use lapin::message::Delivery;
 use judge::{
@@ -15,7 +15,8 @@ fn main() {
   let mut queue = QueueService{
     conn: None
   };
-  queue.connect(&constants::AMQP_URL());
+  let uri = constants::AMQP_URL();
+  queue.connect(&uri);
 
   info!("Connected to the queue");
 

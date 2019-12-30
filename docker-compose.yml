@@ -1,6 +1,19 @@
 version: '3'
 services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      - RABBITMQ_DEFAULT_USER=judge
+      - RABBITMQ_DEFAULT_PASS=judge
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    logging:
+      driver: none
   judge:
     build: .
+    depends_on: 
+      - rabbitmq
+    restart: always
     env_file: 
       .env
