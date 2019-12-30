@@ -2,6 +2,7 @@ use lapin::{
   options::*, 
   types::FieldTable,
   message::Delivery,
+  Channel,
   Connection,
   ConnectionProperties,
 };
@@ -19,12 +20,10 @@ impl QueueService {
 
   pub fn subscribe_to_queue(
     &self, 
+    channel: &Channel,
     name: &str, 
     cb: &dyn Fn(&Delivery)
   ) {
-    let channel = self.conn.as_ref().unwrap().create_channel()
-      .wait()
-      .expect("create_channel");
     let queue = channel
       .queue_declare(
         &name,

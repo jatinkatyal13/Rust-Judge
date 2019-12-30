@@ -27,6 +27,7 @@ struct Judging {
     stdin: String
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct JudgeResult {
   pub stdout: String,
   pub stderr: String
