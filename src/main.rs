@@ -42,8 +42,6 @@ fn main() {
 
   queue.subscribe_to_queue(&subscriber_channel, "test", &|delivery: &Delivery| {
     let result: JudgeResult = run(str::from_utf8(&delivery.data).unwrap());
-    println!("{}", result.stdout);
-    println!("{}", result.stderr);
     let result = serde_json::to_string(&result).unwrap();
     publisher_channel
       .basic_publish(
